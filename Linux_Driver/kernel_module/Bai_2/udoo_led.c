@@ -1,5 +1,4 @@
-#include <stdio.h>
-#include <sys/module.h>
+#include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/io.h>
 
@@ -7,14 +6,14 @@
 #define DRIVER_AUTHOR   "Phong LT9 <phongxxx@gmail.com>"
 
 /*define MUX*/
-#define MUX         0x020E0078h
-#define GPIO1_IO25  0x05h
+#define MUX         0x020E0078
+#define GPIO1_IO25  0x05
 
 /*define GPIO reg*/
-#define GPIO_BASE 0x0209C000h
+#define GPIO_BASE 0x0209C000
 
-#define OFFSET_GPIO1_DR     0x00h
-#define OFFSET_GPIO1_GDIR   0x04h
+#define OFFSET_GPIO1_DR     0x00
+#define OFFSET_GPIO1_GDIR   0x04
 
 #define GPIO_INPUT  0
 #define GPIO_OUTPUT 1
@@ -37,7 +36,7 @@ static int __init init_led(void)
         return -1;
     }  
     temp = ioread32(gpio);
-    pr_info("before config reg : %ld", temp);
+    pr_info("before config reg : %ld\n", temp);
     temp = temp & (~GPIO1_IO25);
     temp = temp | ( GPIO1_IO25);
     iowrite32(temp, gpio);
@@ -48,8 +47,8 @@ static int __init init_led(void)
         pr_alert("fail map base address\n");
         return -1;
     }
-    temp = ioread32(io + GPIO1_GDIR_OFFSET);
-    pr_info("before config reg : %ld", temp);
+    temp = ioread32(io + OFFSET_GPIO1_GDIR);
+    pr_info("before config reg : %ld\n", temp);
     temp = temp | (GPIO_OUTPUT << LED_PIN);
     iowrite32(temp, io + OFFSET_GPIO1_GDIR);
     pr_info("after data reg : %ld\n", temp);
