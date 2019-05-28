@@ -36,7 +36,6 @@ static int __init init_led(void)
         return -1;
     }  
     temp = ioread32(gpio);
-    pr_info("before config reg : %ld\n", temp);
     temp = temp & (~GPIO1_IO25);
     temp = temp | ( GPIO1_IO25);
     iowrite32(temp, gpio);
@@ -48,17 +47,13 @@ static int __init init_led(void)
         return -1;
     }
     temp = ioread32(io + OFFSET_GPIO1_GDIR);
-    pr_info("before config reg : %ld\n", temp);
     temp = temp | (GPIO_OUTPUT << LED_PIN);
     iowrite32(temp, io + OFFSET_GPIO1_GDIR);
-    pr_info("after data reg : %ld\n", temp);
 
 	/*turn on led*/
 	temp = ioread32(io + OFFSET_GPIO1_DR);
-	pr_info("before data reg : %ld\n", temp);
 	temp |= ( 1 << LED_PIN);
 	iowrite32(temp , (io +OFFSET_GPIO1_DR));
-	pr_info("after data reg : %ld\n", temp);
 
     return 0;
 }
@@ -67,10 +62,8 @@ static void __exit exit_led(void)
 {
     /*turn off led*/
 	temp = ioread32(io + OFFSET_GPIO1_DR);
-    pr_info("before data reg : %ld\n", temp);
 	temp &= ~( 1 << LED_PIN);
 	iowrite32(temp , (io +OFFSET_GPIO1_DR));
-    pr_info("after data reg : %ld\n", temp);
 	pr_info("exit module");	
 }
 
