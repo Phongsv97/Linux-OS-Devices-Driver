@@ -6,7 +6,10 @@
 
 #define DEVICE_NODE "/dev/vchar_dev"
 
-/* ham kiem tra entry point open cua vchar driver */
+#define LED_ON      '1'
+#define LED_OFF     '0'
+
+/* open */
 int open_chardev() {
     int fd = open(DEVICE_NODE, O_RDWR);
     if(fd < 0) {
@@ -16,7 +19,7 @@ int open_chardev() {
     return fd;
 }
 
-/* ham kiem tra entry point release cua vchar driver */
+/* close */
 void close_chardev(int fd) {
     close(fd);
 }
@@ -25,8 +28,10 @@ int main() {
     int ret = 0;
     char option = 'q';
     int fd = -1;
+
     printf("Select below options:\n");
-    printf("\to (to open a device node)\n");
+    printf("\t1 (to open a device node : LED on )\n");
+    printf("\t0 (to open a device node : LED off )\n");
     printf("\tc (to close the device node)\n");
     printf("\tq (to quit the application)\n");
     while (1) {
@@ -34,11 +39,21 @@ int main() {
         scanf(" %c", &option);
 
         switch (option) {
-            case 'o':
+            case '1':
                 if (fd < 0)
                     fd = open_chardev();
-                else
+                else {
                     printf("%s has already opened\n", DEVICE_NODE);
+                    write(fd, LED_ON, 1);
+                }
+                break;
+            case '0':
+                if (fd < 0)
+                    fd = open_chardev();
+                else {
+                    printf("%s has already opened\n", DEVICE_NODE);
+                    write(fd, LED_OFF, 1);
+                }
                 break;
             case 'c':
                 if (fd > -1)
