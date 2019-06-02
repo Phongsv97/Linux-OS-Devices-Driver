@@ -129,8 +129,8 @@ static ssize_t dev_write(struct file *filep, const char __user *usr_buff, size_t
     }
     
     if(copy_from_user(kernel_buff, usr_buff, size))
-        return -EFAULT;
-        
+        return -EFAULT;    
+    
     if(0 == strcmp(kernel_buff, "led_on")) {
         setup_led();
         led_on();
@@ -143,7 +143,7 @@ static ssize_t dev_write(struct file *filep, const char __user *usr_buff, size_t
     *offset += size;
 
     printk("Handle write start from %lld, %zu bytes\n", *offset, size);
-    return 1;
+    return size;
 }
  
 static int __init vchar_drv_init(void)
@@ -195,8 +195,6 @@ static int __init vchar_drv_init(void)
 
 static void __exit vchar_drv_exit(void)
 {
-    setup_led();
-    led_off();
     device_destroy(vchar_drv.dev_class, vchar_drv.dev_numb);
     class_destroy(vchar_drv.dev_class);
     unregister_chrdev_region(vchar_drv.dev_numb, 1);
