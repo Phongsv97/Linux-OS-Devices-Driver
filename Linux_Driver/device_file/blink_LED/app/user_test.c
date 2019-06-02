@@ -1,13 +1,35 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <string.h>
 
 #define DEVICE_NODE "/dev/vchar_dev"
 
-#define LED_ON      '1'
-#define LED_OFF     '0'
+#define LED_OFF 0
+#define LED_ON  1
+#define CLOSE   2
+#define QUIT    3
+#define NKEYS   4
+
+struct sym_struct {
+    char *key;
+    int val;
+};
+
+struct sym_struct lookup_table[] = {
+    { "led_on", LED_ON }, { "led_off", LED_OFF}, { "close", CLOSE }, { "quit", QUIT}
+};
+
+int keyfromstring(char *key)
+{
+    int i = 0;
+    for(i = 0; i < NKEYS; i++) {
+       if(strcmp(lookup_table[i].key, key) == 0)
+            return lookup_table[i].val; 
+    }
+    return -1;
+}
 
 /* open */
 int open_chardev() {
@@ -26,50 +48,36 @@ void close_chardev(int fd) {
 
 int main() {
     int ret = 0;
-    char option = 'q';
+    char option[30];
     int fd = -1;
+    int numb_read = 0, numb_write = 0;
 
     printf("Select below options:\n");
-    printf("\t1 (to open a device node : LED on )\n");
-    printf("\t0 (to open a device node : LED off )\n");
-    printf("\tc (to close the device node)\n");
-    printf("\tq (to quit the application)\n");
+    printf("\tled_on    (to open a device node : LED on )\n");
+    printf("\tled_off   (to open a device node : LED off )\n");
+    printf("\tquit	(quit program)\n");
     while (1) {
         printf("Enter your option: ");
-        scanf(" %c", &option);
-
-        switch (option) {
-            case '1':
-                if (fd < 0)
-                    fd = open_chardev();
-                else {
-                    printf("%s has already opened\n", DEVICE_NODE);
-                    write(fd, LED_ON, 1);
-                }
+        gets(option);
+        switch (keyfromstring(option)) {
+            case LED_ON :
+                fd = open_chardev();
+                numb_write = write(fd, option, strlen(option));
+                if(numb_write < 0)
+                    printf("write failed\n");
+		close(fd);
                 break;
-            case '0':
-                if (fd < 0)
-                    fd = open_chardev();
-                else {
-                    printf("%s has already opened\n", DEVICE_NODE);
-                    write(fd, LED_OFF, 1);
-                }
+            case LED_OFF :
+                fd = open_chardev();
+                numb_write = write(fd, option, strlen(option));
+                if(numb_write < 0)
+                    printf("write failed\n");
+		close(fd);
                 break;
-            case 'c':
-                if (fd > -1)
-                    close_chardev(fd);
-                else
-                    printf("%s has not opened yet! Can not close\n", DEVICE_NODE);
-                fd = -1;
-                break;
-            case 'q':
-                if (fd > -1)
-                    close_chardev(fd);
-                printf("Quit the application. Good bye!\n");
-                return 0;
-            default:
-                printf("invalid option %c\n", option);
-                break;
+	    case QUIT :
+		return 0;
+	    default :
+		printf("Invalid option \n");
         }
     };
 }

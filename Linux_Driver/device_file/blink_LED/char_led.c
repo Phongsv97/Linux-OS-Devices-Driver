@@ -7,6 +7,7 @@
 #include <linux/io.h>
 #include <linux/uaccess.h>   
 #include <linux/slab.h>
+#include <linux/string.h>
 
 MODULE_AUTHOR("PHONGLT9");
 MODULE_LICENSE("GPL");
@@ -111,52 +112,43 @@ static int dev_close(struct inode *i_node, struct file *file_p)
 
 static ssize_t dev_read(struct file *filep, char __user *usr_buff, size_t size, loff_t *offset)
 {
-    char *kernel_buff = NULL;
-    int numb_bytes = 0;
-
-    printk("Handle read start from %lld, %zu bytes\n", *offset, size);
-
-    kernel_buff = kzalloc(size, GFP_KERNEL);
-    if(kernel_buff == NULL) {
-        printk("Errorr kzalloc\n");
-        return 0;
-    }
-
-    
-    return numb_bytes;
+    printk("Handle read\n");
+    return 0;
 }
 
 static ssize_t dev_write(struct file *filep, const char __user *usr_buff, size_t size, loff_t *offset)
 {
     char *kernel_buff = NULL;
 
-    printk("Handle write start from %lld, %zu bytes\n", *offset, size);
+    printk("Handle write start from %lld, %zu bytes, messages : %s\n", *offset, size, usr_buff);
 
     kernel_buff = kzalloc(size, GFP_KERNEL);
     if(kernel_buff == NULL) {
         printk("Error kzalloc\n");
         return 0;
     }
-
+    
     if(copy_from_user(kernel_buff, usr_buff, size))
         return -EFAULT;
-    
-    if(*kernel_buff == '1') {
+        
+    if(0 == strcmp(kernel_buff, "led_on")) {
         setup_led();
         led_on();
     }
-    else
+    else if(0 == strcmp(kernel_buff, "led_off")) {
+        setup_led();
         led_off();
+    }
 
-    *offset += 1;
+    *offset += size;
 
+    printk("Handle write start from %lld, %zu bytes\n", *offset, size);
     return 1;
 }
  
 static int __init vchar_drv_init(void)
 {
     int ret = 0;
-
     /* Init device number */
     vchar_drv.dev_numb = 0;
     ret = alloc_chrdev_region(&vchar_drv.dev_numb, 0, 1, "vchar_device");
@@ -188,7 +180,6 @@ static int __init vchar_drv_init(void)
         goto failed_allocate_cdev;
     }
 
-
     printk("Initialize vchar driver successfully\n");
 
     failed_register_dev_numb : 
@@ -204,6 +195,8 @@ static int __init vchar_drv_init(void)
 
 static void __exit vchar_drv_exit(void)
 {
+    setup_led();
+    led_off();
     device_destroy(vchar_drv.dev_class, vchar_drv.dev_numb);
     class_destroy(vchar_drv.dev_class);
     unregister_chrdev_region(vchar_drv.dev_numb, 1);
