@@ -1,0 +1,7 @@
+/* team Vision training course */
+
+Usage:
+
+1. cd Bai<number>
+2. make all - to build
+3. make clean - to clean
